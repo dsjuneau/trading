@@ -10,7 +10,7 @@ node_modules
 /client/build
 
 # misc
-.env
+.env.json
 .DS_Store
 .env.local
 .env.development.local
