@@ -18,13 +18,12 @@ app.get("*", (req, res) => {
   res.sendFile("./client/build/index.html", { root: __dirname });
 });
 
-console.log(process.env.key);
-
-// mongoose
-//   .connect(process.env.MONGODB_URI, {
-//     useNewUrlParser: true,
-//   })
-//   .then(() => console.log("Database Connected"));
+mongoose
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("Database Connected"));
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
