@@ -1,6 +1,6 @@
 const express = require("express");
 const PORT = process.env.PORT || 5000;
-// const routes = require("./routes");
+const routes = require("./routes");
 const mongoose = require("mongoose");
 const app = express();
 require("dotenv").config();
@@ -12,7 +12,7 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static("client/build"));
 }
 
-// app.use(routes);
+app.use(routes);
 
 app.get("*", (req, res) => {
   res.sendFile("./client/build/index.html", { root: __dirname });
