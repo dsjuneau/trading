@@ -1,4 +1,6 @@
-const { check, validationResult } = require("express-validator/check");
+const { check, validationResult } = require("express-validator");
+const db = require("../models");
+const bcrypt = require("bcryptjs");
 
 module.exports = {
   createUser: [
@@ -15,7 +17,23 @@ module.exports = {
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
-      res.json({ msg: "create user route hit" });
+
+      const { name, email, password } = req.body;
+      db.User.findOne({ email })
+        .then((dbReturn) => {
+          if (dbReturn) {
+            res.status(400).json({ msg: "User already exists" });
+          } else {
+            let user = new db.User({ name, email, password });
+            const salt = bcrypt.genSaltSync(10);
+            user.password = bcrypt.hashSync(password, salt);
+            user
+              .save()
+              .then((dbR) => res.json(dbR))
+              .catch((err) => res.status(422).json(err));
+          }
+        })
+        .catch((err) => res.status(500).json({ msg: "Server Error" }));
     },
   ],
 
