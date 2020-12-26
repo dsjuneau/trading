@@ -1,6 +1,9 @@
 const { check, validationResult } = require("express-validator");
 const db = require("../models");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const auth = require("../middleware/auth");
 
 module.exports = {
   createUser: [
@@ -29,7 +32,24 @@ module.exports = {
             user.password = bcrypt.hashSync(password, salt);
             user
               .save()
-              .then((dbR) => res.json(dbR))
+              .then((dbR) => {
+                const payload = {
+                  user: {
+                    id: user.id,
+                  },
+                };
+                jwt.sign(
+                  payload,
+                  process.env.JWT_SECRET,
+                  {
+                    expiresIn: 360000,
+                  },
+                  (err, token) => {
+                    if (err) throw err;
+                    res.json({ token });
+                  }
+                );
+              })
               .catch((err) => res.status(422).json(err));
           }
         })
@@ -40,9 +60,21 @@ module.exports = {
   authUser: function (req, res) {
     res.json({ msg: "auth user route hit" });
   },
-  isAuthUser: function (req, res) {
-    res.json({ msg: "isAuth user route hit" });
-  },
+  isAuthUser: [
+    auth,
+    function (req, res) {
+      db.User.findById(req.user.id)
+        .select("-password")
+        .then((dbR) => {
+          if (dbR) {
+            res.json(dbR);
+          } else {
+            res.status(401).json({ msg: "Could not find user" });
+          }
+        })
+        .catch((err) => res.status(500).json({ msg: "Server Error" }));
+    },
+  ],
   reset: function (req, res) {
     res.json({ msg: "reset route hit" });
   },
