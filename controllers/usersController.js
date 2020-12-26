@@ -58,7 +58,34 @@ module.exports = {
   ],
 
   authUser: function (req, res) {
-    res.json({ msg: "auth user route hit" });
+    const { email, password } = req.body;
+    db.User.findOne({ email })
+      .then((dbR) => {
+        if (!dbR) {
+          return res.status(400).json({ msg: "Invalid Credentials" });
+        }
+        if (bcrypt.compareSync(password, dbR.password)) {
+          const payload = {
+            user: {
+              id: dbR.id,
+            },
+          };
+          jwt.sign(
+            payload,
+            process.env.JWT_SECRET,
+            {
+              expiresIn: 360000,
+            },
+            (err, token) => {
+              if (err) throw err;
+              res.json({ token });
+            }
+          );
+        } else {
+          res.status(400).json({ msg: "Invalid Credentials" });
+        }
+      })
+      .catch((err) => res.status(500).json({ msg: "Server Error" }));
   },
   isAuthUser: [
     auth,
