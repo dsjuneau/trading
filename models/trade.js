@@ -3,9 +3,8 @@ const Schema = mongoose.Schema;
 
 const tradeSchema = new Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
-  category: { type: String, required: true },
-  tradeId: { type: String, required: true },
-  trade: { type: Array },
+  account: { type: String, unique: true },
+  trades: { type: Object },
 });
 
 const Trade = mongoose.model("Trade", tradeSchema);
